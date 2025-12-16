@@ -27,8 +27,8 @@ export const AuthProvider = ({ children }) => {
 
   const loadUser = async () => {
     try {
-      const response = await authAPI.me();
-      setUser(response.data.user);
+      const data = await authAPI.me();
+      setUser(data.user);
     } catch (error) {
       console.error('Failed to load user:', error);
       logout();
@@ -38,8 +38,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    const response = await authAPI.login(credentials);
-    const { token, user } = response.data;
+    const data = await authAPI.login(credentials);
+    const { token, user } = data;
     localStorage.setItem('token', token);
     setUser(user);
     return user;

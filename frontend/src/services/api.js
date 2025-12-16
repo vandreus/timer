@@ -18,16 +18,16 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Handle auth errors
+// Handle auth errors and unwrap response data
 api.interceptors.response.use(
-  (response) => response,
+  (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
-    return Promise.reject(error);
+    return Promise.reject(error.response?.data || error);
   }
 );
 

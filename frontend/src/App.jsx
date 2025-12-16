@@ -4,12 +4,12 @@ import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/auth/Login';
 import Dashboard from './components/employee/Dashboard';
+import TimeEntryForm from './components/employee/TimeEntryForm';
+import Calendar from './components/employee/Calendar';
+import History from './components/employee/History';
+import AdminLayout from './components/admin/AdminLayout';
 
 // Placeholder components - will be implemented
-const Calendar = () => <div className="p-8"><h1 className="text-2xl font-bold">Calendar - Coming Soon</h1></div>;
-const History = () => <div className="p-8"><h1 className="text-2xl font-bold">History - Coming Soon</h1></div>;
-const TimeEntryNew = () => <div className="p-8"><h1 className="text-2xl font-bold">New Time Entry - Coming Soon</h1></div>;
-const AdminPanel = () => <div className="p-8"><h1 className="text-2xl font-bold">Admin Panel - Coming Soon</h1></div>;
 const Reports = () => <div className="p-8"><h1 className="text-2xl font-bold">Reports - Coming Soon</h1></div>;
 
 const ProtectedRoute = ({ children, adminOnly = false }) => {
@@ -74,7 +74,7 @@ function AppRoutes() {
         path="/time-entry/new"
         element={
           <ProtectedRoute>
-            <TimeEntryNew />
+            <TimeEntryForm />
           </ProtectedRoute>
         }
       />
@@ -82,7 +82,7 @@ function AppRoutes() {
         path="/time-entry/clock-out/:id"
         element={
           <ProtectedRoute>
-            <TimeEntryNew />
+            <TimeEntryForm />
           </ProtectedRoute>
         }
       />
@@ -90,7 +90,7 @@ function AppRoutes() {
         path="/admin/*"
         element={
           <ProtectedRoute adminOnly>
-            <AdminPanel />
+            <AdminLayout />
           </ProtectedRoute>
         }
       />
