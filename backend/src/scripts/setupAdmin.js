@@ -1,4 +1,5 @@
 import readline from 'readline';
+import bcrypt from 'bcrypt';
 import { User } from '../models/index.js';
 import sequelize, { testConnection, syncDatabase } from '../config/database.js';
 
@@ -60,9 +61,12 @@ const setupAdmin = async () => {
     console.log('');
     console.log('Creating admin user...');
 
+    // Hash password manually to avoid model hook issues
+    const passwordHash = await bcrypt.hash(password, 10);
+
     const admin = await User.create({
       username,
-      password, // Will be hashed by model hook
+      passwordHash,
       fullName,
       isAdmin: true,
     });
