@@ -1,5 +1,5 @@
 import readline from 'readline';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { User } from '../models/index.js';
 import sequelize, { testConnection, syncDatabase } from '../config/database.js';
 
