@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: molcom-timer-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-timetracker}
+      POSTGRES_USER: ${DB_USER:-timetracker}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - molcom-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-timetracker}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: molcom-timer-backend
+    environment:
+      DATABASE_URL: postgresql://${DB_USER:-timetracker}:${DB_PASSWORD:-changeme}@database:5432/${DB_NAME:-timetracker}
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-timetracker}
+      DB_USER: ${DB_USER:-timetracker}
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      JWT_SECRET: ${JWT_SECRET:-change_this_secret_in_production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-24h}
+      PORT: 3000
+      NODE_ENV: ${NODE_ENV:-production}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      MAX_FILE_SIZE: ${MAX_FILE_SIZE:-5242880}
+      UPLOAD_DIR: /app/uploads
+      REMINDER_CRON_SCHEDULE: ${REMINDER_CRON_SCHEDULE:-0 8 * * 1}
+      REMINDER_ENABLED: ${REMINDER_ENABLED:-true}
+      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+    volumes:
+      - uploads_data:/app/uploads
+    ports:
+      - "3000:3000"
+    networks:
+      - molcom-network
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+        VITE_GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+    container_name: molcom-timer-frontend
+    ports:
+      - "80:80"
+    networks:
+      - molcom-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  uploads_data:
+    driver: local
+
+networks:
+  molcom-network:
+    driver: bridge
