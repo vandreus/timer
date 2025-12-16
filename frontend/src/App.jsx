@@ -2,40 +2,18 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+import Layout from './components/layout/Layout';
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from './components/auth/Login';
-import Dashboard from './components/employee/Dashboard';
-import TimeEntryForm from './components/employee/TimeEntryForm';
-import Calendar from './components/employee/Calendar';
-import History from './components/employee/History';
-import AdminLayout from './components/admin/AdminLayout';
 
-// Placeholder components - will be implemented
-const Reports = () => <div className="p-8"><h1 className="text-2xl font-bold">Reports - Coming Soon</h1></div>;
-
-const ProtectedRoute = ({ children, adminOnly = false }) => {
-  const { user, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (adminOnly && !user.isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-};
+import Dashboard from './pages/Dashboard';
+import TimeEntries from './pages/TimeEntries';
+import Calendar from './pages/Calendar';
+import Users from './pages/admin/Users';
+import Worksites from './pages/admin/Worksites';
+import Projects from './pages/admin/Projects';
+import Tasks from './pages/admin/Tasks';
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -46,62 +24,85 @@ function AppRoutes() {
         path="/login"
         element={user ? <Navigate to="/" replace /> : <Login />}
       />
+
       <Route
         path="/"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <Layout>
+              <Dashboard />
+            </Layout>
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/time-entries"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TimeEntries />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
       <Route
         path="/calendar"
         element={
           <ProtectedRoute>
-            <Calendar />
+            <Layout>
+              <Calendar />
+            </Layout>
           </ProtectedRoute>
         }
       />
+
       <Route
-        path="/history"
-        element={
-          <ProtectedRoute>
-            <History />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/time-entry/new"
-        element={
-          <ProtectedRoute>
-            <TimeEntryForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/time-entry/clock-out/:id"
-        element={
-          <ProtectedRoute>
-            <TimeEntryForm />
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/admin/*"
+        path="/admin/users"
         element={
           <ProtectedRoute adminOnly>
-            <AdminLayout />
+            <Layout>
+              <Users />
+            </Layout>
           </ProtectedRoute>
         }
       />
+
       <Route
-        path="/reports"
+        path="/admin/worksites"
         element={
           <ProtectedRoute adminOnly>
-            <Reports />
+            <Layout>
+              <Worksites />
+            </Layout>
           </ProtectedRoute>
         }
       />
+
+      <Route
+        path="/admin/projects"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <Projects />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/tasks"
+        element={
+          <ProtectedRoute adminOnly>
+            <Layout>
+              <Tasks />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
@@ -110,10 +111,8 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <div className="min-h-screen bg-gray-50">
-          <AppRoutes />
-          <Toaster position="top-right" />
-        </div>
+        <AppRoutes />
+        <Toaster position="top-right" />
       </BrowserRouter>
     </AuthProvider>
   );

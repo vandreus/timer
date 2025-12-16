@@ -60,8 +60,11 @@ export const getActiveTimer = async (req, res, next) => {
 export const createTimeEntry = async (req, res, next) => {
   try {
     const {
+      entryType = 'timed',
       worksiteId,
       projectId,
+      entryDate,
+      totalHours,
       startTime,
       endTime,
       breakMinutes,
@@ -71,40 +74,50 @@ export const createTimeEntry = async (req, res, next) => {
 
     const userId = req.isAdmin && req.body.userId ? req.body.userId : req.userId;
 
-    if (!worksiteId || !startTime) {
-      return res.status(400).json({ error: 'Worksite and start time are required' });
+    if (!worksiteId) {
+      return res.status(400).json({ error: 'Worksite is required' });
     }
 
-    // Check for active timer
-    const activeTimer = await checkActiveTimer(userId);
-    if (activeTimer && !endTime) {
-      return res.status(400).json({ 
-        error: 'You already have an active timer running',
-        activeTimer,
-      });
-    }
+    if (entryType === 'duration') {
+      if (!entryDate || !totalHours) {
+        return res.status(400).json({ error: 'Entry date and total hours are required for duration entries' });
+      }
+    } else {
+      if (!startTime) {
+        return res.status(400).json({ error: 'Start time is required for timed entries' });
+      }
 
-    // Check for overlaps if end time provided
-    if (endTime) {
-      const overlap = await checkOverlap(userId, startTime, endTime);
-      if (overlap) {
-        return res.status(400).json({
-          error: 'Time entry overlaps with existing entry',
-          overlappingEntry: overlap,
+      const activeTimer = await checkActiveTimer(userId);
+      if (activeTimer && !endTime) {
+        return res.status(400).json({ 
+          error: 'You already have an active timer running',
+          activeTimer,
         });
+      }
+
+      if (endTime) {
+        const overlap = await checkOverlap(userId, startTime, endTime);
+        if (overlap) {
+          return res.status(400).json({
+            error: 'Time entry overlaps with existing entry',
+            overlappingEntry: overlap,
+          });
+        }
       }
     }
 
-    // Create time entry
     const timeEntry = await TimeEntry.create({
       userId,
+      entryType,
       worksiteId,
       projectId,
+      entryDate,
+      totalHours: entryType === 'duration' ? parseFloat(totalHours) : undefined,
       startTime,
       endTime,
       breakMinutes: breakMinutes || 0,
       notes,
-      isActive: !endTime,
+      isActive: entryType === 'timed' && !endTime,
     });
 
     // Process photo if uploaded

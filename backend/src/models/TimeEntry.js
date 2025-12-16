@@ -36,9 +36,21 @@ const TimeEntry = sequelize.define('TimeEntry', {
     },
     onDelete: 'SET NULL',
   },
+  entryType: {
+    type: DataTypes.ENUM('timed', 'duration'),
+    defaultValue: 'timed',
+    allowNull: false,
+    field: 'entry_type',
+  },
+  entryDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true,
+    field: 'entry_date',
+    comment: 'Used for duration-only entries (when entryType=duration)',
+  },
   startTime: {
     type: DataTypes.DATE,
-    allowNull: false,
+    allowNull: true,
     field: 'start_time',
   },
   endTime: {
@@ -79,20 +91,38 @@ const TimeEntry = sequelize.define('TimeEntry', {
   timestamps: true,
   underscored: true,
   hooks: {
-    beforeSave: (entry) => {
-      // Calculate total hours when end time is set
-      if (entry.startTime && entry.endTime) {
-        const diffMs = new Date(entry.endTime) - new Date(entry.startTime);
-        const diffMinutes = diffMs / (1000 * 60);
-        const totalMinutes = diffMinutes - (entry.breakMinutes || 0);
-        const totalHours = totalMinutes / 60;
-        
-        // Round to nearest 15 minutes (0.25 hours)
-        entry.totalHours = Math.round(totalHours * 4) / 4;
+    beforeValidate: (entry) => {
+      if (entry.entryType === 'duration') {
+        if (!entry.entryDate) {
+          throw new Error('Entry date is required for duration-only entries');
+        }
+        if (!entry.totalHours || entry.totalHours <= 0) {
+          throw new Error('Total hours must be greater than 0 for duration-only entries');
+        }
+        entry.startTime = null;
+        entry.endTime = null;
         entry.isActive = false;
       } else {
-        entry.isActive = true;
-        entry.totalHours = null;
+        if (!entry.startTime) {
+          throw new Error('Start time is required for timed entries');
+        }
+        entry.entryDate = entry.startTime.toISOString().split('T')[0];
+      }
+    },
+    beforeSave: (entry) => {
+      if (entry.entryType === 'timed') {
+        if (entry.startTime && entry.endTime) {
+          const diffMs = new Date(entry.endTime) - new Date(entry.startTime);
+          const diffMinutes = diffMs / (1000 * 60);
+          const totalMinutes = diffMinutes - (entry.breakMinutes || 0);
+          const totalHours = totalMinutes / 60;
+          
+          entry.totalHours = Math.round(totalHours * 4) / 4;
+          entry.isActive = false;
+        } else {
+          entry.isActive = true;
+          entry.totalHours = null;
+        }
       }
     },
   },
