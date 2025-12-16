@@ -103,6 +103,11 @@ docker-compose exec backend npm run setup-admin
 
 Follow the prompts to create your admin user.
 
+**Note:** If you encounter bcrypt import errors, ensure dependencies are installed:
+```bash
+docker-compose exec backend npm install
+```
+
 6. **Access the application:**
 - Frontend: http://localhost (or your domain)
 - Backend API: http://localhost:3000
