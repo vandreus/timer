@@ -39,7 +39,7 @@ services:
       UPLOAD_DIR: /app/uploads
       REMINDER_CRON_SCHEDULE: ${REMINDER_CRON_SCHEDULE:-0 8 * * 1}
       REMINDER_ENABLED: ${REMINDER_ENABLED:-true}
-      CORS_ORIGIN: ${CORS_ORIGIN:-*}
+      CORS_ORIGIN: http://localhost
     volumes:
       - uploads_data:/app/uploads
     ports:
