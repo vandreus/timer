@@ -9,6 +9,14 @@ ENV VITE_GOOGLE_MAPS_API_KEY=$VITE_GOOGLE_MAPS_API_KEY
 
 WORKDIR /app
 
+# Build arguments for Vite environment variables
+ARG VITE_API_URL=/api
+ARG VITE_GOOGLE_MAPS_API_KEY=
+
+# Set as environment variables for the build
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_GOOGLE_MAPS_API_KEY=$VITE_GOOGLE_MAPS_API_KEY
+
 COPY package*.json ./
 RUN npm install
 
