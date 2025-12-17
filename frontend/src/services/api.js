@@ -104,4 +104,14 @@ export const timeEntryAPI = {
   delete: (id) => api.delete(`/time-entries/${id}`),
 };
 
-export default api;
+// Unified API object for components
+const unifiedAPI = {
+  auth: authAPI,
+  users: userAPI,
+  worksites: worksiteAPI,
+  projects: projectAPI,
+  tasks: taskAPI,
+  timeEntries: timeEntryAPI,
+};
+
+export default unifiedAPI;
